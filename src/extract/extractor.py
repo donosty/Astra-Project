@@ -60,26 +60,28 @@ class EarthquakeExtractor:
                 
                 except requests.exceptions.Timeout:
                     logger.warning(f"El servidor tardo mucho (Intento {intento}/{max_reintentos}) Reintentando ...")
-                    time.sleep(5)
                 except requests.exceptions.HTTPError as e:
                     status_code = e.response.status_code
                     logger.error(f"Erros http {status_code}: {e}")
 
                     if 400 <= status_code < 500:
                         logger.error("Error del cliente detectado. No se realizaran mas intentos")
-                        break 
+                        raise APIExtractionError(f"La respuesta http lanzo el codigo: {status_code}") from e
                 except requests.exceptions.RequestException as e:
                     logger.error(f"Error de conexion con la API {e}")
+                    
                 if intento < max_reintentos:
                     tiempo_espera = 2**intento
                     logger.info(f"Reintentando conexion en {tiempo_espera} segundos")
                     time.sleep(tiempo_espera)
                 else:
                     logger.error("Se agotaron todos los reintentos disponibles")
-                
+
+        except APIInvalidStructureError:
+            raise
         except Exception as e:
-            logger.error("Se agotaron todos los reintentos disponibles")
-            raise APIExtractionError(f"Error en la extraccion: {e}")
+            logger.exception("Erros inesperado en la extraccion")
+            raise APIExtractionError("No se pudo completar la extraccion") from e
 
 if __name__ == "__main__":
     extractor = EarthquakeExtractor()
