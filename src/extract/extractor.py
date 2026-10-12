@@ -1,7 +1,6 @@
 import requests
 import logging
 import time
-import json
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("DataExtractor")
@@ -14,6 +13,11 @@ class APIEmptyResponseError(Exception):
 
 
 class APIInvalidStructureError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+class APIExtractionError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
@@ -55,7 +59,7 @@ class EarthquakeExtractor:
                     return data
                 
                 except requests.exceptions.Timeout:
-                    logger.warning(f"El servidor tardo mucho (Intento {intento + 1}/{max_reintentos}) Reintentano en 5 segundos")
+                    logger.warning(f"El servidor tardo mucho (Intento {intento}/{max_reintentos}) Reintentando ...")
                     time.sleep(5)
                 except requests.exceptions.HTTPError as e:
                     status_code = e.response.status_code
@@ -73,13 +77,9 @@ class EarthquakeExtractor:
                 else:
                     logger.error("Se agotaron todos los reintentos disponibles")
                 
-    
-        except TypeError as e:
-            logger.error(f"Error de tipado: {e}")
-        except ImportError as e:
-            logger.error(f"Error al extraer : {e}")
-
-        raise APIEmptyResponseError("No se pudo obtener informacion de la API")
+        except Exception as e:
+            logger.error("Se agotaron todos los reintentos disponibles")
+            raise APIExtractionError(f"Error en la extraccion: {e}")
 
 if __name__ == "__main__":
     extractor = EarthquakeExtractor()
