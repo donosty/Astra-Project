@@ -62,7 +62,7 @@ class EarthquakeExtractor:
                     logger.warning(f"El servidor tardo mucho (Intento {intento}/{max_reintentos}) Reintentando ...")
                 except requests.exceptions.HTTPError as e:
                     status_code = e.response.status_code
-                    logger.error(f"Erros http {status_code}: {e}")
+                    logger.error(f"Error http {status_code}: {e}")
 
                     if 400 <= status_code < 500:
                         logger.error("Error del cliente detectado. No se realizaran mas intentos")
@@ -83,7 +83,7 @@ class EarthquakeExtractor:
         except APIExtractionError:
             raise
         except Exception as e:
-            logger.exception("Erros inesperado en la extraccion")
+            logger.exception("Error inesperado en la extraccion")
             raise APIExtractionError("No se pudo completar la extraccion") from e
 
 if __name__ == "__main__":
