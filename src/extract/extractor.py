@@ -76,8 +76,11 @@ class EarthquakeExtractor:
                     time.sleep(tiempo_espera)
                 else:
                     logger.error("Se agotaron todos los reintentos disponibles")
+                    raise APIExtractionError(f"Se ha alcanzado el maximo de intentos: {intento}")
 
         except APIInvalidStructureError:
+            raise
+        except APIExtractionError:
             raise
         except Exception as e:
             logger.exception("Erros inesperado en la extraccion")
